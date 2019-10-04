@@ -1,0 +1,14 @@
+
+ids = requests.get(users_url, headers=header).json()
+print(ids)
+returns:
+{'Status': {'StatusCode': '0', 'Severity': 'Info', 'StatusDescription': 'Success'}, 'UserList': [{'LegalParticipantIdentifier': '000995928731567433'}, {'LegalParticipantIdentifier': '000996202016520455'}, {'LegalParticipantIdentifier': '908997180284469041'}, {'LegalParticipantIdentifier': '913995730031830909'}, {'LegalParticipantIdentifier': '913996201744144603'}]}
+
+
+
+data = {'LegalParticipantIdentifier': {identify}}  # find this out from query to /users endpoint
+account_info = requests.post(base_url+'user/accounts', headers=header, data=data).json()
+print(account_info)
+returns:
+{'Status': {'StatusCode': '0', 'Severity': 'Info', 'StatusDescription': 'Success'}, 'AccessibleAccountDetailList': [{'_id': '5d96009fd0d221896f91d801', 'OperatingCompanyIdentifier': '424', 'ProductCode': 'DDA', 'PrimaryIdentifier': '00000000000148725876996', 'LegalParticipantIdentifier': '000995928731567433', 'BasicAccountDetail': {'BranchIdentifier': '907', 'RedactedAccountNumber': '*******000014******6996', 'Codes': {'CategoryCode': 'CHCK', 'CategoryDescription': 'CHECKING', 'RelationshipCode': 'POA', 'SubProductCode': '16', 'AccountStatusCode': '99', 'StatusDescription': 'OPEN'}, 'Balances': {'CurrentBalanceAmount': '341.83', 'AvailableBalanceAmount': '341.83', 'PayoffBalanceAmount': '0.0', 'CreditAvailableBalanceAmount': '0.0', 'InvestmentBalanceAmount': '0.0', 'AccessibleBalanceAmount': '341.83'}}}, {'_id': '5d960781d0d221896f929af4', 'OperatingCompanyIdentifier': '424', 'ProductCode': 'DDA', 'PrimaryIdentifier': '00000000000150874428249', 'LegalParticipantIdentifier': '000995928731567433', 'BasicAccountDetail': {'BranchIdentifier': '542', 'RedactedAccountNumber': '*******000015******8249', 'Codes': {'CategoryCode': 'SAVG', 'CategoryDescription': 'SAVINGS', 'RelationshipCode': 'IND', 'SubProductCode': 'MM', 'AccountStatusCode': '99', 'StatusDescription': 'OPEN'}, 'Balances': {'CurrentBalanceAmount': '81045.63', 'AvailableBalanceAmount': '81045.63', 'PayoffBalanceAmount': '0.0', 'CreditAvailableBalanceAmount': '0.0', 'InvestmentBalanceAmount': '0.0', 'AccessibleBalanceAmount': '81045.63'}}}]}
+

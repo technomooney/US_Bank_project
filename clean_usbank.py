@@ -10,12 +10,12 @@ url = 'https://alpha-api.usbank.com/innovation-locations/v1/StringQuery?applicat
 
 header = {'apiKey': apiKey}
 response = requests.get(url, headers=header).json()
-#
-# reply = response['GetListATMorBranchReply']
-# atmList = reply['ATMList']  # Todo extract specific location data needed
-#
-# for atm in atmList:
-#     print(atm)
+
+reply = response['GetListATMorBranchReply']
+atmList = reply['ATMList']  # Todo extract specific location data needed
+
+for atm in atmList:
+    print(atm)
 
 # Example fetching data from Loan Rates API
 
@@ -31,11 +31,9 @@ print('The rate is ', rate)
 
 
 base_url = 'https://alpha-api.usbank.com/innovations/v1/'
-# json_data=
 
 users_url = base_url+'users'
 ids = requests.get(users_url, headers=header).json()
-# ids = requests.post(users_url,json=)
 print(ids)
 
 ## TODOs for Users:
@@ -62,8 +60,6 @@ Use a Python OAuth library if you need to authenticate with OAuth
 #                        )
 # r = usbank.get(accounts_url)
 # print(r.text)
-# url = 'https://alpha-api.usbank.com/innovation/v1/user/accounts'
-# url = 'https://jcm-bank-43157.appspot.com/innovation/v1/user/accounts'
 identify = '000995928731567433'
 data = {'LegalParticipantIdentifier': {identify}}  # find this out from query to /users endpoint
 account_info = requests.post(base_url+'user/accounts', headers=header, data=data).json()
