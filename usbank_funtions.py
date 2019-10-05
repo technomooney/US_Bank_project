@@ -5,6 +5,7 @@ import os
 
 
 def main():
+    testing_account
     url_dict = {
     'autoloan_url':'https://alpha-api.usbank.com/innovation-rate/v1/GetAutoLoanRates?application=RIB&output=json&branchnumber=1&zipcode=80130&regionid=1&loanamount=24000&loantermmonths=12&loanproduct=NEW',
     'atm_url':'https://alpha-api.usbank.com/innovation-locations/v1/StringQuery?application=parasoft&transactionid=afae903d-8946-4f88-a958-4bdbcf0bed6f&output=json&searchtype=A&stringquery=55403&branchfeatures=BOP'
@@ -21,6 +22,7 @@ def main():
             users_list = get_user_list(base_url,header)
             account_info_dict = get_accounts(base_url,users_list,header)
             save('account_dict',account_info_dict)
+
     # users_list = get_user_list(base_url,header)
     # namesDict= getNamesandIdentifiers(users_list,base_url,header)
     # # save('namesDict',namesDict)
@@ -43,6 +45,9 @@ def get_auto_rate(url_dict,header):
     return rate
 
 
+def getTransactions(accountID,baseUrl,header):
+
+
 def get_user_list(base_url,header):
     users_url = base_url + '/users'
     ids = requests.get(users_url, headers=header).json()
@@ -53,26 +58,25 @@ def get_user_list(base_url,header):
     return users_list
 
 
-def getNamesandIdentifiers(LPIList, baseUrl, header):
+def getNamesandIdentifiers(LPI, baseUrl, header):
     namesAndIdentifiers = {}
-    for LPI in LPIList:
-        allAccountsUrl = baseUrl + '/user/accounts'
-        params = {'LegalParticipantIdentifier': LPI}
-        AADL = requests.post(allAccountsUrl, data=params, headers=header).json()['AccessibleAccountDetailList']
-        pi = AADL[0]['PrimaryIdentifier']
-        pc = AADL[0]['ProductCode']
-        oci = AADL[0]['OperatingCompanyIdentifier']
-        data = {'PrimaryIdentifier': pi,
-                'ProductCode': pc,
-                'OperatingCompanyIdentifier': oci}
-        accountDetailsUrl = baseUrl + '/account/details'
-        accountDetails = requests.post(accountDetailsUrl, data=data, headers=header).json()
-        detail = accountDetails['Account']['AccountDetail']
-        try:
-            name = detail['AddressAndTitle']['AccountTitle']
-        except KeyError:
-            name = 'Unknown Name ' + str(LPIList.index(LPI) + 1)
-        namesAndIdentifiers[name] = LPI
+    allAccountsUrl = baseUrl + '/user/accounts'
+    params = {'LegalParticipantIdentifier': LPI}
+    AADL = requests.post(allAccountsUrl, data=params, headers=header).json()['AccessibleAccountDetailList']
+    pi = AADL[0]['PrimaryIdentifier']
+    pc = AADL[0]['ProductCode']
+    oci = AADL[0]['OperatingCompanyIdentifier']
+    data = {'PrimaryIdentifier': pi,
+            'ProductCode': pc,
+            'OperatingCompanyIdentifier': oci}
+    accountDetailsUrl = baseUrl + '/account/details'
+    accountDetails = requests.post(accountDetailsUrl, data=data, headers=header).json()
+    detail = accountDetails['Account']['AccountDetail']
+    try:
+        name = detail['AddressAndTitle']['AccountTitle']
+    except KeyError:
+        name = 'Unknown Name ' + str(LPIList.index(LPI) + 1)
+    namesAndIdentifiers[name] = LPI
 
     return namesAndIdentifiers
 
