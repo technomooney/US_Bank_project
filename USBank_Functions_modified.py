@@ -11,7 +11,7 @@ def main():
     'autoloan_url':'https://alpha-api.usbank.com/innovation-rate/v1/GetAutoLoanRates?application=RIB&output=json&branchnumber=1&zipcode=80130&regionid=1&loanamount=24000&loantermmonths=12&loanproduct=NEW',
     'atm_url':'https://alpha-api.usbank.com/innovation-locations/v1/StringQuery?application=parasoft&transactionid=afae903d-8946-4f88-a958-4bdbcf0bed6f&output=json&searchtype=A&stringquery=55403&branchfeatures=BOP'
     }
-    header = {'apiKey': 'GaS6ZkPffGZOxGZBAThMjnt9yyn9dZ28'}
+    apiKey = os.environ['USBANK_APIKEY']  # TODO set this environment variable in PyCharm or for your OS
     base_url = 'https://alpha-api.usbank.com/innovations/v1'
     try:
         if sys.argv[2]:
