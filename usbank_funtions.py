@@ -3,6 +3,7 @@ import sys
 import os
 
 
+
 def main():
     url_dict = {
     'autoloan_url':'https://alpha-api.usbank.com/innovation-rate/v1/GetAutoLoanRates?application=RIB&output=json&branchnumber=1&zipcode=80130&regionid=1&loanamount=24000&loantermmonths=12&loanproduct=NEW',
@@ -20,18 +21,14 @@ def main():
             users_list = get_user_list(base_url,header)
             account_info_dict = get_accounts(base_url,users_list,header)
             save('account_dict',account_info_dict)
+    # users_list = get_user_list(base_url,header)
+    # namesDict= getNamesandIdentifiers(users_list,base_url,header)
+    # # save('namesDict',namesDict)
+    # users_list = get_user_list(base_url,header)
+    # account_info_dict = get_accounts(base_url,users_list,header)
+    # # save('account_dict',account_info_dict)
+    # print(account_info_dict)
 
-
-    #     elif sys.argv[1:] == True:
-    #         print('hit')
-    # else:
-    #     users_list=get_user_list(base_url,header)
-    #     atm_list = get_atm_list(url_dict,header)
-    #     print(users_list)
-    # arg1=sys.argv[1]
-    # args2= sys.argv[1:3]
-    # print(args2)
-    # print(arg1)
 
 def get_atm_list(url_dict,header):
     response = requests.get(url_dict['atm_url'], headers=header).json()
@@ -39,10 +36,12 @@ def get_atm_list(url_dict,header):
     atmList = reply['ATMList']  # Todo extract specific location data needed
     return atmList
 
+
 def get_auto_rate(url_dict,header):
     rateResponse = requests.get(url_dict['autoloan_url'], headers=header).json()
     rate = rateResponse['AutoLoanRates']['RateTier']['Rate']
     return rate
+
 
 def get_user_list(base_url,header):
     users_url = base_url + '/users'
@@ -52,6 +51,7 @@ def get_user_list(base_url,header):
     for item in users:
         users_list.append(item['LegalParticipantIdentifier'])
     return users_list
+
 
 def getNamesandIdentifiers(LPIList, baseUrl, header):
     namesAndIdentifiers = {}
@@ -82,6 +82,7 @@ def save(file_name,data):
     file.write(str(data))
     file.close()
 
+
 def get_user_list_arg(base_url,header):
     users_url = base_url + 'users'
     ids = requests.get(users_url, headers=header).json()
@@ -93,6 +94,7 @@ def get_user_list_arg(base_url,header):
     file = open('user_list.txt',"w")
     return users_id_list
 
+
 def get_accounts(base_url,users_list,header):
     account_info_dict = {}
     for ident in users_list:
@@ -100,5 +102,6 @@ def get_accounts(base_url,users_list,header):
         account_info = requests.post(base_url + '/user/accounts', headers=header, data=data).json()
         account_info_dict[ident] = account_info
     return account_info_dict
+
 
 main()

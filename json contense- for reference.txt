@@ -1,4 +1,4 @@
-
+#get the user ids
 ids = requests.get(users_url, headers=header).json()
 print(ids)
 returns:
