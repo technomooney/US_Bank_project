@@ -10,14 +10,28 @@ def main():
     }
     # apiKey = os.environ['USBANK_APIKEY']  # TODO set this environment variable in PyCharm or for your OS
     header = {'apiKey': os.environ['USBANK_APIKEY']}
-    base_url = 'https://alpha-api.usbank.com/innovations/v1/'
-    if sys.argv[1] == 'users':
-        users_list = get_user_list(base_url,header)
-    # users_list=get_user_list(base_url,header)
-    atm_list = get_atm_list(url_dict,header)
-    print(users_list)
-    arg1=sys.argv[1]
-    print(arg1)
+    base_url = 'https://alpha-api.usbank.com/innovations/v1'
+    if sys.argv[1]:
+        if sys.argv[1] == 'names':
+            users_list = get_user_list(base_url,header)
+            namesDict= getNamesandIdentifiers(users_list,base_url,header)
+            save('namesDict',namesDict)
+        elif sys.argv[1] == 'accounts':
+            users_list = get_user_list(base_url,header)
+            account_info_dict = get_accounts(base_url,users_list,header)
+            save('account_dict',account_info_dict)
+
+
+    #     elif sys.argv[1:] == True:
+    #         print('hit')
+    # else:
+    #     users_list=get_user_list(base_url,header)
+    #     atm_list = get_atm_list(url_dict,header)
+    #     print(users_list)
+    # arg1=sys.argv[1]
+    # args2= sys.argv[1:3]
+    # print(args2)
+    # print(arg1)
 
 def get_atm_list(url_dict,header):
     response = requests.get(url_dict['atm_url'], headers=header).json()
@@ -31,16 +45,60 @@ def get_auto_rate(url_dict,header):
     return rate
 
 def get_user_list(base_url,header):
-    users_url = base_url + 'users'
+    users_url = base_url + '/users'
     ids = requests.get(users_url, headers=header).json()
     users=ids['UserList']
     users_list = []
     for item in users:
-        users_list.append(item[])
-    file = open('user_list.txt',"w")
-    file.write(str(users))
-    file.close()
-    return users
+        users_list.append(item['LegalParticipantIdentifier'])
+    return users_list
 
+def getNamesandIdentifiers(LPIList, baseUrl, header):
+    namesAndIdentifiers = {}
+    for LPI in LPIList:
+        allAccountsUrl = baseUrl + '/user/accounts'
+        params = {'LegalParticipantIdentifier': LPI}
+        AADL = requests.post(allAccountsUrl, data=params, headers=header).json()['AccessibleAccountDetailList']
+        pi = AADL[0]['PrimaryIdentifier']
+        pc = AADL[0]['ProductCode']
+        oci = AADL[0]['OperatingCompanyIdentifier']
+        data = {'PrimaryIdentifier': pi,
+                'ProductCode': pc,
+                'OperatingCompanyIdentifier': oci}
+        accountDetailsUrl = baseUrl + '/account/details'
+        accountDetails = requests.post(accountDetailsUrl, data=data, headers=header).json()
+        detail = accountDetails['Account']['AccountDetail']
+        try:
+            name = detail['AddressAndTitle']['AccountTitle']
+        except KeyError:
+            name = 'Unknown Name ' + str(LPIList.index(LPI) + 1)
+        namesAndIdentifiers[name] = LPI
+
+    return namesAndIdentifiers
+
+
+def save(file_name,data):
+    file = open(file_name,'w')
+    file.write(str(data))
+    file.close()
+
+def get_user_list_arg(base_url,header):
+    users_url = base_url + 'users'
+    ids = requests.get(users_url, headers=header).json()
+    print(ids)
+    users=ids['UserList']
+    users_id_list = []
+    for item in users:
+        users_id_list.append(item['LegalParticipantIdentifier'])
+    file = open('user_list.txt',"w")
+    return users_id_list
+
+def get_accounts(base_url,users_list,header):
+    account_info_dict = {}
+    for ident in users_list:
+        data = {'LegalParticipantIdentifier': f'{ident}'}  # find this out from query to /users endpoint
+        account_info = requests.post(base_url + '/user/accounts', headers=header, data=data).json()
+        account_info_dict[ident] = account_info
+    return account_info_dict
 
 main()
