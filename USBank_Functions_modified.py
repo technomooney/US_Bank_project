@@ -1,29 +1,41 @@
 import requests
 import sys
 import os
+import math
 
 
 
 def main():
-    testing_account
+    testing_account= "913996201744144603"
     url_dict = {
     'autoloan_url':'https://alpha-api.usbank.com/innovation-rate/v1/GetAutoLoanRates?application=RIB&output=json&branchnumber=1&zipcode=80130&regionid=1&loanamount=24000&loantermmonths=12&loanproduct=NEW',
     'atm_url':'https://alpha-api.usbank.com/innovation-locations/v1/StringQuery?application=parasoft&transactionid=afae903d-8946-4f88-a958-4bdbcf0bed6f&output=json&searchtype=A&stringquery=55403&branchfeatures=BOP'
     }
-    # apiKey = os.environ['USBANK_APIKEY']  # TODO set this environment variable in PyCharm or for your OS
-    header = {'apiKey': os.environ['USBANK_APIKEY']}
+    header = {'apiKey': 'GaS6ZkPffGZOxGZBAThMjnt9yyn9dZ28'}
     base_url = 'https://alpha-api.usbank.com/innovations/v1'
-    if sys.argv[1]:
-        if sys.argv[1] == 'names':
-            users_list = get_user_list(base_url,header)
-            namesDict= getNamesandIdentifiers(users_list,base_url,header)
-            save('namesDict',namesDict)
-        elif sys.argv[1] == 'accounts':
-            users_list = get_user_list(base_url,header)
-            account_info_dict = get_accounts(base_url,users_list,header)
-            save('account_dict',account_info_dict)
+    try:
+        if sys.argv[2]:
+            if sys.argv[1] == 'transactions' and sys.argv[2].isnumeric():
+                transactionsList = getTransactions(sys.argv[2],base_url,header)
+                dates, individualPinches, cumulativePinches, descriptions = getAccountTransactions(transactionsList)
+                save('account_date_list',dates)
+                save('individual_pinches_list',individualPinches)
+                save('cumulative_pinches_list',cumulativePinches)
+                save('tranaction_descriptions_list',descriptions)
+    except:
+        pass
+        if sys.argv[1]:
+            if sys.argv[1] == 'names':
+                users_list = get_user_list(base_url,header)
+                namesDict= getNamesandIdentifiers(users_list,base_url,header)
+                save('namesDict',namesDict)
+            elif sys.argv[1] == 'accounts':
+                users_list = get_user_list(base_url,header)
+                account_info_dict = get_accounts(base_url,users_list,header)
+                save('account_dict',account_info_dict)
 
-    # users_list = get_user_list(base_url,header)
+
+# users_list = get_user_list(base_url,header)
     # namesDict= getNamesandIdentifiers(users_list,base_url,header)
     # # save('namesDict',namesDict)
     # users_list = get_user_list(base_url,header)
@@ -35,7 +47,7 @@ def main():
 def get_atm_list(url_dict,header):
     response = requests.get(url_dict['atm_url'], headers=header).json()
     reply = response['GetListATMorBranchReply']
-    atmList = reply['ATMList']  # Todo extract specific location data needed
+    atmList = reply['ATMList']
     return atmList
 
 
@@ -45,7 +57,46 @@ def get_auto_rate(url_dict,header):
     return rate
 
 
-def getTransactions(accountID,baseUrl,header):
+def getTransactions(LPI, baseUrl, header):
+    allAccountsUrl = baseUrl + '/user/accounts'
+    params = {'LegalParticipantIdentifier': LPI}
+    AADL = requests.post(allAccountsUrl, data=params, headers=header).json()['AccessibleAccountDetailList']
+    for item in AADL:
+        if item['ProductCode'] == 'CCD' or item['ProductCode'] == 'BCD':
+            pi = item['PrimaryIdentifier']
+            pc = item['ProductCode']
+            oci = item['OperatingCompanyIdentifier']
+            data = {'PrimaryIdentifier': pi,
+                    'ProductCode': pc,
+                    'OperatingCompanyIdentifier': oci}
+            transactionsUrl = baseUrl + '/account/transactions'
+            transactions = requests.post(transactionsUrl, data=data, headers=header).json()
+            if transactions['Status']['StatusCode'] == '404':
+                continue
+            else:
+
+                # if len(transactions['TransactionList']) >= 20:
+                #     print(transactions['TransactionList'])
+                return transactions['TransactionList']
+
+
+def getAccountTransactions(transactions):
+    dates = []
+    individualPinches = []
+    cumulativePinches = []
+    descriptions = []
+    for transaction in transactions:
+        try:
+            initial = float(transaction['PostedAmount'])
+            rounded = math.ceil(initial)
+            pinch = rounded - initial
+            descriptions.append(transaction['TransactionDescription'])
+            dates.append(transaction['PostedDate'])
+            individualPinches.append(pinch)
+            cumulativePinches.append(sum(individualPinches))
+        except Exception as err:
+            print(str(err))
+    return dates, individualPinches, cumulativePinches, descriptions
 
 
 def get_user_list(base_url,header):
